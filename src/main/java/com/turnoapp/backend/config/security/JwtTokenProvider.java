@@ -1,6 +1,7 @@
 package com.turnoapp.backend.config.security;
 
 import com.turnoapp.backend.model.User;
+import com.turnoapp.backend.model.enums.UserRole;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,6 +52,41 @@ public class JwtTokenProvider {
                 .getPayload();
 
         return Long.parseLong(claims.getSubject());
+    }
+
+    public String getEmailFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("email", String.class);
+    }
+
+    public UserRole getRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        String role = claims.get("role", String.class);
+        return UserRole.valueOf(role);
+    }
+
+    public Long getProfessionalIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        Object professionalIdClaim = claims.get("professionalId");
+        if (professionalIdClaim != null) {
+            return Long.valueOf(professionalIdClaim.toString());
+        }
+        return null;
     }
 
     public boolean validateToken(String token) {

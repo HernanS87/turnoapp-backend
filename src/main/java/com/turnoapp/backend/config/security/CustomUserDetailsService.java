@@ -1,24 +1,25 @@
 package com.turnoapp.backend.config.security;
 
+import com.turnoapp.backend.model.Professional;
 import com.turnoapp.backend.model.User;
+import com.turnoapp.backend.model.enums.Status;
+import com.turnoapp.backend.model.enums.UserRole;
+import com.turnoapp.backend.repository.ProfessionalRepository;
 import com.turnoapp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Collections;
-
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final ProfessionalRepository professionalRepository;
 
     @Override
     @Transactional
@@ -40,13 +41,20 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     private UserDetails createUserDetails(User user) {
-        Collection<? extends GrantedAuthority> authorities =
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
-
-        return new org.springframework.security.core.userdetails.User(
+        if (user.getStatus() != Status.ACTIVE) {
+            throw new DisabledException("User account is disabled");
+        }
+        Long professionalId = UserRole.PROFESSIONAL.equals(user.getRole())
+                ? professionalRepository.findByUserId(user.getId())
+                    .map(Professional::getId)
+                    .orElse(null)
+                : null;
+        return new CustomUserDetails(
+                user.getId(),
                 user.getEmail(),
                 user.getPasswordHash(),
-                authorities
+                user.getRole(),
+                professionalId
         );
     }
 }
