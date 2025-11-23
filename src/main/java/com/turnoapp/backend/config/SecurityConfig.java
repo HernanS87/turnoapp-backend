@@ -70,8 +70,12 @@ public class SecurityConfig {
                         // Professional endpoints
                         .requestMatchers("/api/professional/**").hasRole("PROFESSIONAL")
 
+                        .requestMatchers("/api/appointments/availability/**").permitAll()
+
                         // Client endpoints
                         .requestMatchers("/api/client/**").hasAnyRole("CLIENT", "PROFESSIONAL")
+
+                        .requestMatchers(HttpMethod.GET, "/api/services/public/**").permitAll()
 
                         // Any other request requires authentication
                         .anyRequest().authenticated()

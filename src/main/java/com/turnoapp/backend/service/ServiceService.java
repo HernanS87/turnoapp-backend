@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface ServiceService {
     List<ServiceResponse> getServicesByProfessional(Long professionalId);
+    List<ServiceResponse> getServicesByCustomUrl(String customUrl);
+    ServiceResponse getServiceByCustomUrlAndId(String customUrl, Long serviceId);
     ServiceResponse getServiceById(Long id, Long professionalId);
     ServiceResponse createService(CreateServiceRequest request, Long professionalId);
     ServiceResponse updateService(Long id, UpdateServiceRequest request, Long professionalId);

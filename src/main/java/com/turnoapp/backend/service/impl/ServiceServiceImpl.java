@@ -33,6 +33,30 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<ServiceResponse> getServicesByCustomUrl(String customUrl) {
+        var professionalId = professionalRepository.findByCustomUrl(customUrl)
+                .map(Professional::getId)
+                .orElseThrow(() -> new ResourceNotFoundException("Professional not found with customUrl: " + customUrl));
+
+        return serviceRepository.findByProfessionalIdAndStatus(professionalId, Status.ACTIVE).stream()
+                .map(ServiceResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ServiceResponse getServiceByCustomUrlAndId(String customUrl, Long serviceId) {
+        var professionalId = professionalRepository.findByCustomUrl(customUrl)
+                .map(Professional::getId)
+                .orElseThrow(() -> new ResourceNotFoundException("Professional not found with customUrl: " + customUrl));
+
+        return serviceRepository.findByIdAndProfessionalIdAndStatus(serviceId, professionalId, Status.ACTIVE)
+                .map(ServiceResponse::fromEntity)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ServiceResponse getServiceById(Long id, Long professionalId) {
         Service service = serviceRepository.findByIdAndProfessionalId(id, professionalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + id));

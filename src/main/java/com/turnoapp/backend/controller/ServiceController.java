@@ -30,6 +30,26 @@ public class ServiceController {
         return ResponseEntity.ok(services);
     }
 
+
+    @GetMapping("/public/by-url/{customUrl}")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<List<ServiceResponse>> getServicesByCustomUrl(
+            @PathVariable String customUrl
+    ) {
+        List<ServiceResponse> services = serviceService.getServicesByCustomUrl(customUrl);
+        return ResponseEntity.ok(services);
+    }
+
+    @GetMapping("/public/by-url/{customUrl}/{serviceId}")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<ServiceResponse> getServiceByCustomUrlAndId(
+            @PathVariable String customUrl,
+            @PathVariable Long serviceId
+    ) {
+        var service = serviceService.getServiceByCustomUrlAndId(customUrl, serviceId);
+        return ResponseEntity.ok(service);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ServiceResponse> getServiceById(
             @PathVariable Long id,
