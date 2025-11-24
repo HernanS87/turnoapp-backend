@@ -19,19 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Implementación del servicio de gestión de turnos.
- *
- * Principios aplicados:
- * - Single Responsibility: Cada método tiene una responsabilidad clara
- * - Dependency Inversion: Depende de interfaces (repositories)
- * - Open/Closed: Extensible sin modificar código existente
- *
- * Patrones:
- * - Service Layer Pattern
- * - Repository Pattern (delegación a repositories)
- * - Strategy Pattern (validaciones intercambiables)
- */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -60,8 +48,11 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AppointmentResponse> getAppointmentsByClient(Long clientId) {
-        log.debug("Obteniendo turnos del cliente: {}", clientId);
+    public List<AppointmentResponse> getAppointmentsByClient(Long userId) {
+
+        var clientId = clientRepository.findByUserId(userId)
+                .map(Client::getId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado"));
 
         List<Appointment> appointments = appointmentRepository
                 .findByClientIdOrderByDateDescStartTimeDesc(clientId);
@@ -74,7 +65,6 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional(readOnly = true)
     public AppointmentResponse getAppointmentById(Long id, Long professionalId) {
-        log.debug("Obteniendo turno: {} del profesional: {}", id, professionalId);
 
         Appointment appointment = appointmentRepository
                 .findByIdAndProfessionalId(id, professionalId)
@@ -85,12 +75,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public AppointmentResponse createAppointment(CreateAppointmentRequest request, Long clientId) {
-        log.info("Creando turno para cliente: {} - Servicio: {} - Fecha: {} {}",
-                clientId, request.serviceId(), request.date(), request.startTime());
+    public AppointmentResponse createAppointment(CreateAppointmentRequest request, Long userId) {
 
         // 1. Validar que el cliente existe
-        Client client = clientRepository.findByUserId(clientId)
+        Client client = clientRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado"));
 
         // 2. Validar que el servicio existe
@@ -165,14 +153,14 @@ public class AppointmentServiceImpl implements AppointmentService {
                 if (!isProfessional) {
                     throw new IllegalArgumentException("Solo el profesional puede cambiar a este estado");
                 }
-                if (!appointment.getProfessional().getId().equals(userId)) {
+                if (!appointment.getProfessional().getUser().getId().equals(userId)) {
                     throw new IllegalArgumentException("No tienes permiso para modificar este turno");
                 }
             }
             case CANCELLED -> {
                 // Ambos pueden cancelar
-                boolean isOwnerProfessional = appointment.getProfessional().getId().equals(userId) && isProfessional;
-                boolean isOwnerClient = appointment.getClient().getId().equals(userId) && !isProfessional;
+                boolean isOwnerProfessional = appointment.getProfessional().getUser().getId().equals(userId) && isProfessional;
+                boolean isOwnerClient = appointment.getClient().getUser().getId().equals(userId) && !isProfessional;
 
                 if (!isOwnerProfessional && !isOwnerClient) {
                     throw new IllegalArgumentException("No tienes permiso para cancelar este turno");

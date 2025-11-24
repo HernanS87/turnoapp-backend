@@ -40,7 +40,7 @@ public class AppointmentController {
     @GetMapping("/client")
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<List<AppointmentResponse>> getClientAppointments(Authentication authentication) {
-        Long clientId = getClientId(authentication);
+        Long clientId = getUserId(authentication);
 
         List<AppointmentResponse> appointments = appointmentService.getAppointmentsByClient(clientId);
 
@@ -54,7 +54,7 @@ public class AppointmentController {
             @Valid @RequestBody CreateAppointmentRequest request,
             Authentication authentication
     ) {
-        Long clientId = getClientId(authentication);
+        Long clientId = getUserId(authentication);
 
         AppointmentResponse appointment = appointmentService.createAppointment(request, clientId);
 
@@ -143,12 +143,10 @@ public class AppointmentController {
     }
 
 
-    private Long getClientId(Authentication authentication) {
+    private Long getUserId(Authentication authentication) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Long userId = userDetails.getUserId();
 
-        // En el contexto actual, el userId es el mismo que el clientId/professionalId
-        // porque las relaciones son OneToOne con User
         return userId;
     }
 
