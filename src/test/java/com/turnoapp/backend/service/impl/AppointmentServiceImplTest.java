@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +100,7 @@ class AppointmentServiceImplTest {
                 .professional(professional)
                 .name("Consulta")
                 .description("Consulta psicológica")
-                .price(5000.0)
+                .price(BigDecimal.valueOf(5000.0))
                 .duration(60) // 60 minutos
                 .status(Status.ACTIVE)
                 .build();

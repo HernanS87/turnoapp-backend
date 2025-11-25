@@ -1,9 +1,11 @@
 package com.turnoapp.backend.config.security;
 
+import com.turnoapp.backend.model.Client;
 import com.turnoapp.backend.model.Professional;
 import com.turnoapp.backend.model.User;
 import com.turnoapp.backend.model.enums.Status;
 import com.turnoapp.backend.model.enums.UserRole;
+import com.turnoapp.backend.repository.ClientRepository;
 import com.turnoapp.backend.repository.ProfessionalRepository;
 import com.turnoapp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final ProfessionalRepository professionalRepository;
+    private final ClientRepository clientRepository;
 
     @Override
     @Transactional
@@ -49,12 +52,20 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .map(Professional::getId)
                     .orElse(null)
                 : null;
+
+        Long clientId = UserRole.CLIENT.equals(user.getRole())
+                ? clientRepository.findByUserId(user.getId())
+                .map(Client::getId)
+                .orElse(null)
+                : null;
+
         return new CustomUserDetails(
                 user.getId(),
                 user.getEmail(),
                 user.getPasswordHash(),
                 user.getRole(),
-                professionalId
+                professionalId,
+                clientId
         );
     }
 }

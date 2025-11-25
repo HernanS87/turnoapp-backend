@@ -159,7 +159,7 @@ public class AppointmentController {
             }
             return professionalId;
         } else if (userDetails.getRole() == UserRole.CLIENT) {
-            return userDetails.getUserId(); // Para clientes, usar userId
+            return userDetails.getClientId();
         } else {
             throw new RuntimeException("Rol no válido para esta operación");
         }

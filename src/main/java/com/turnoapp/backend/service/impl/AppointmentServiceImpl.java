@@ -129,11 +129,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     public AppointmentResponse updateAppointmentStatus(
             Long id,
             UpdateAppointmentStatusRequest request,
-            Long userId,
+            Long userEntityId,
             boolean isProfessional
     ) {
         log.info("Actualizando estado del turno: {} a {} - Usuario: {} (isProfessional: {})",
-                id, request.status(), userId, isProfessional);
+                id, request.status(), userEntityId, isProfessional);
 
         // 1. Buscar turno
         Appointment appointment = appointmentRepository.findById(id)
@@ -153,14 +153,14 @@ public class AppointmentServiceImpl implements AppointmentService {
                 if (!isProfessional) {
                     throw new IllegalArgumentException("Solo el profesional puede cambiar a este estado");
                 }
-                if (!appointment.getProfessional().getId().equals(userId)) {
+                if (!appointment.getProfessional().getId().equals(userEntityId)) {
                     throw new IllegalArgumentException("No tienes permiso para modificar este turno");
                 }
             }
             case CANCELLED -> {
                 // Ambos pueden cancelar
-                boolean isOwnerProfessional = appointment.getProfessional().getId().equals(userId) && isProfessional;
-                boolean isOwnerClient = appointment.getClient().getId().equals(userId) && !isProfessional;
+                boolean isOwnerProfessional = appointment.getProfessional().getId().equals(userEntityId) && isProfessional;
+                boolean isOwnerClient = appointment.getClient().getId().equals(userEntityId) && !isProfessional;
 
                 if (!isOwnerProfessional && !isOwnerClient) {
                     throw new IllegalArgumentException("No tienes permiso para cancelar este turno");

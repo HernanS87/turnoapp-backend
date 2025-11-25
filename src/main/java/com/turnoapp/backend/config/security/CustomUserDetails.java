@@ -17,14 +17,16 @@ public class CustomUserDetails implements UserDetails {
     private final String password;
     private final UserRole role;
     private final Long professionalId;
+    private final Long clientId;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(Long userId, String email, String password, UserRole role, Long professionalId) {
+    public CustomUserDetails(Long userId, String email, String password, UserRole role, Long professionalId, Long clientId) {
         this.userId = userId;
         this.email = email;
         this.password = password;
         this.role = role;
         this.professionalId = professionalId;
+        this.clientId = clientId;
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
