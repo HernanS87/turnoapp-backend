@@ -1,14 +1,18 @@
 package com.turnoapp.backend.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turnoapp.backend.dto.professional.CreateProfessionalRequest;
 import com.turnoapp.backend.dto.professional.ProfessionalResponse;
+import com.turnoapp.backend.dto.professional.SiteConfigRequest;
 import com.turnoapp.backend.dto.professional.UpdateProfessionalRequest;
 import com.turnoapp.backend.exception.ResourceNotFoundException;
 import com.turnoapp.backend.model.Professional;
+import com.turnoapp.backend.model.SiteConfig;
 import com.turnoapp.backend.model.enums.Status;
 import com.turnoapp.backend.model.User;
 import com.turnoapp.backend.model.enums.UserRole;
 import com.turnoapp.backend.repository.ProfessionalRepository;
+import com.turnoapp.backend.repository.SiteConfigRepository;
 import com.turnoapp.backend.repository.UserRepository;
 import com.turnoapp.backend.service.ProfessionalService;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +29,22 @@ public class ProfessionalServiceImpl implements ProfessionalService {
 
     private final ProfessionalRepository professionalRepository;
     private final UserRepository userRepository;
+    private final SiteConfigRepository siteConfigRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     @Transactional(readOnly = true)
     public List<ProfessionalResponse> getAllProfessionals() {
-        return professionalRepository.findAllWithUser().stream()
+        List<Professional> professionals = professionalRepository.findAllWithUser();
+        // Cargar SiteConfig para cada profesional
+        professionals.forEach(professional -> {
+            if (professional.getSiteConfig() == null) {
+                siteConfigRepository.findByProfessionalId(professional.getId())
+                        .ifPresent(professional::setSiteConfig);
+            }
+        });
+        return professionals.stream()
                 .map(ProfessionalResponse::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -40,6 +54,12 @@ public class ProfessionalServiceImpl implements ProfessionalService {
     public ProfessionalResponse getProfessionalById(Long id) {
         Professional professional = professionalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Professional not found with id: " + id));
+
+        // Cargar SiteConfig si existe
+        if (professional.getSiteConfig() == null) {
+            siteConfigRepository.findByProfessionalId(id)
+                    .ifPresent(professional::setSiteConfig);
+        }
 
         return ProfessionalResponse.fromEntity(professional);
     }
@@ -132,5 +152,81 @@ public class ProfessionalServiceImpl implements ProfessionalService {
         User user = professional.getUser();
         user.setStatus(user.getStatus() == Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE);
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public ProfessionalResponse updateSiteConfig(Long professionalId, SiteConfigRequest request) {
+        Professional professional = professionalRepository.findById(professionalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Professional not found with id: " + professionalId));
+
+        // Obtener o crear SiteConfig
+        SiteConfig siteConfig = siteConfigRepository.findByProfessionalId(professionalId)
+                .orElse(SiteConfig.builder()
+                        .professional(professional)
+                        .build());
+
+        // Actualizar campos
+        if (request.logoUrl() != null) {
+            siteConfig.setLogoUrl(request.logoUrl());
+        }
+        if (request.primaryColor() != null) {
+            siteConfig.setPrimaryColor(request.primaryColor());
+        }
+        if (request.secondaryColor() != null) {
+            siteConfig.setSecondaryColor(request.secondaryColor());
+        }
+        if (request.professionalDescription() != null) {
+            siteConfig.setProfessionalDescription(request.professionalDescription());
+        }
+        if (request.address() != null) {
+            siteConfig.setAddress(request.address());
+        }
+        if (request.city() != null) {
+            siteConfig.setCity(request.city());
+        }
+        if (request.province() != null) {
+            siteConfig.setProvince(request.province());
+        }
+        if (request.country() != null) {
+            siteConfig.setCountry(request.country());
+        }
+        if (request.businessHours() != null) {
+            siteConfig.setBusinessHours(request.businessHours());
+        }
+        if (request.welcomeMessage() != null) {
+            siteConfig.setWelcomeMessage(request.welcomeMessage());
+        }
+        if (request.socialMedia() != null) {
+            try {
+                String json = objectMapper.writeValueAsString(request.socialMedia());
+                siteConfig.setSocialMedia(json);
+            } catch (Exception e) {
+                throw new RuntimeException("Error serializing social media", e);
+            }
+        }
+
+        siteConfigRepository.save(siteConfig);
+
+        // Actualizar la relación en Professional
+        professional.setSiteConfig(siteConfig);
+        professionalRepository.save(professional);
+
+        return ProfessionalResponse.fromEntity(professional);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProfessionalResponse getProfessionalByCustomUrl(String customUrl) {
+        Professional professional = professionalRepository.findByCustomUrl(customUrl)
+                .orElseThrow(() -> new ResourceNotFoundException("Professional not found with custom URL: " + customUrl));
+
+        // Cargar SiteConfig si existe
+        if (professional.getSiteConfig() == null) {
+            siteConfigRepository.findByProfessionalId(professional.getId())
+                    .ifPresent(professional::setSiteConfig);
+        }
+
+        return ProfessionalResponse.fromEntity(professional);
     }
 }
