@@ -229,7 +229,7 @@ class ProfessionalControllerIntegrationTest {
         mockMvc.perform(put("/api/professionals/me/site-config")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test

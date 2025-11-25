@@ -121,6 +121,8 @@ class AppointmentServiceImplTest {
     void testCreateAppointment_ThrowsException_WhenOverlapping() {
         // Arrange
         LocalDate tomorrow = LocalDate.now().plusDays(1);
+        // Calcular el día de la semana correcto (0=Domingo, 1=Lunes, ..., 6=Sábado)
+        int dayOfWeek = tomorrow.getDayOfWeek().getValue() % 7;
         String startTime = "10:00";
         String endTime = "11:00";
 
@@ -130,6 +132,16 @@ class AppointmentServiceImplTest {
                 startTime,
                 "Notas de prueba"
         );
+
+        // Crear un scheduleSlot para el día correcto
+        ScheduleSlot slotForDay = ScheduleSlot.builder()
+                .id(1L)
+                .professional(professional)
+                .dayOfWeek(dayOfWeek)
+                .startTime("09:00")
+                .endTime("18:00")
+                .active(true)
+                .build();
 
         // Mock existing appointment that overlaps
         Appointment existingAppointment = Appointment.builder()
@@ -145,8 +157,10 @@ class AppointmentServiceImplTest {
 
         when(clientRepository.findByUserId(2L)).thenReturn(Optional.of(client));
         when(serviceRepository.findById(1L)).thenReturn(Optional.of(service));
-        when(scheduleRepository.findByProfessionalIdAndDayOfWeekAndActiveTrue(1L, 1))
-                .thenReturn(List.of(scheduleSlot));
+        // Usar doReturn().when() para evitar problemas con stubbing estricto de Mockito
+        doReturn(List.of(slotForDay))
+                .when(scheduleRepository)
+                .findByProfessionalIdAndDayOfWeekAndActiveTrue(1L, dayOfWeek);
         when(appointmentRepository.findOverlappingAppointments(
                 eq(1L),
                 eq(tomorrow),
@@ -171,6 +185,8 @@ class AppointmentServiceImplTest {
     void testCreateAppointment_Success_WhenConsecutiveAppointments() {
         // Arrange
         LocalDate tomorrow = LocalDate.now().plusDays(1);
+        // Calcular el día de la semana correcto (0=Domingo, 1=Lunes, ..., 6=Sábado)
+        int dayOfWeek = tomorrow.getDayOfWeek().getValue() % 7;
         String startTime = "10:00";
         String endTime = "11:00";
 
@@ -180,6 +196,16 @@ class AppointmentServiceImplTest {
                 startTime,
                 "Notas de prueba"
         );
+
+        // Crear un scheduleSlot para el día correcto
+        ScheduleSlot slotForDay = ScheduleSlot.builder()
+                .id(1L)
+                .professional(professional)
+                .dayOfWeek(dayOfWeek)
+                .startTime("09:00")
+                .endTime("18:00")
+                .active(true)
+                .build();
 
         // Mock existing appointment that doesn't overlap (ends before new one starts)
         Appointment existingAppointment = Appointment.builder()
@@ -195,8 +221,10 @@ class AppointmentServiceImplTest {
 
         when(clientRepository.findByUserId(2L)).thenReturn(Optional.of(client));
         when(serviceRepository.findById(1L)).thenReturn(Optional.of(service));
-        when(scheduleRepository.findByProfessionalIdAndDayOfWeekAndActiveTrue(1L, 1))
-                .thenReturn(List.of(scheduleSlot));
+        // Usar doReturn().when() para evitar problemas con stubbing estricto de Mockito
+        doReturn(List.of(slotForDay))
+                .when(scheduleRepository)
+                .findByProfessionalIdAndDayOfWeekAndActiveTrue(1L, dayOfWeek);
         when(appointmentRepository.findOverlappingAppointments(
                 eq(1L),
                 eq(tomorrow),
@@ -236,6 +264,8 @@ class AppointmentServiceImplTest {
         // Arrange
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         LocalDate dayAfter = LocalDate.now().plusDays(2);
+        // Calcular el día de la semana correcto para dayAfter
+        int dayOfWeek = dayAfter.getDayOfWeek().getValue() % 7;
         String startTime = "10:00";
         String endTime = "11:00";
 
@@ -245,6 +275,16 @@ class AppointmentServiceImplTest {
                 startTime,
                 null
         );
+
+        // Crear un scheduleSlot para el día correcto
+        ScheduleSlot slotForDay = ScheduleSlot.builder()
+                .id(1L)
+                .professional(professional)
+                .dayOfWeek(dayOfWeek)
+                .startTime("09:00")
+                .endTime("18:00")
+                .active(true)
+                .build();
 
         // Mock existing appointment on different day
         Appointment existingAppointment = Appointment.builder()
@@ -260,8 +300,10 @@ class AppointmentServiceImplTest {
 
         when(clientRepository.findByUserId(2L)).thenReturn(Optional.of(client));
         when(serviceRepository.findById(1L)).thenReturn(Optional.of(service));
-        when(scheduleRepository.findByProfessionalIdAndDayOfWeekAndActiveTrue(1L, 2))
-                .thenReturn(List.of(scheduleSlot));
+        // Usar doReturn().when() para evitar problemas con stubbing estricto de Mockito
+        doReturn(List.of(slotForDay))
+                .when(scheduleRepository)
+                .findByProfessionalIdAndDayOfWeekAndActiveTrue(1L, dayOfWeek);
         when(appointmentRepository.findOverlappingAppointments(
                 eq(1L),
                 eq(dayAfter),
