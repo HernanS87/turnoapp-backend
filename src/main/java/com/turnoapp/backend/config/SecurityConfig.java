@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/client/**").hasAnyRole("CLIENT", "PROFESSIONAL")
 
                         .requestMatchers(HttpMethod.GET, "/api/services/public/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/professionals/public/**").permitAll()
 
                         // Any other request requires authentication
                         .anyRequest().authenticated()

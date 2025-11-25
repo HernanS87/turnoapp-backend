@@ -24,6 +24,9 @@ public class Professional {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @OneToOne(mappedBy = "professional", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private SiteConfig siteConfig;
+
     @Column(nullable = false)
     private String profession;
 

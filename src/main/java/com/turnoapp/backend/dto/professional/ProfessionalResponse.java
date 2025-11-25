@@ -12,7 +12,8 @@ public record ProfessionalResponse(
         String profession,
         String customUrl,
         String phone,
-        Status status
+        Status status,
+        SiteConfigResponse siteConfig
 ) {
     public static ProfessionalResponse fromEntity(Professional professional) {
         return new ProfessionalResponse(
@@ -24,7 +25,8 @@ public record ProfessionalResponse(
                 professional.getProfession(),
                 professional.getCustomUrl(),
                 professional.getUser().getPhone(),
-                professional.getUser().getStatus()
+                professional.getUser().getStatus(),
+                SiteConfigResponse.fromEntity(professional.getSiteConfig())
         );
     }
 }
