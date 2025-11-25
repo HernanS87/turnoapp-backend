@@ -11,16 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Repositorio para gestionar turnos (Appointments).
- *
- * Proporciona métodos para:
- * - Filtrar turnos por profesional o cliente
- * - Verificar solapamientos de horarios
- * - Consultar disponibilidad por rango de fechas
- *
- * Patrón: Repository Pattern (abstracción de acceso a datos)
- */
+
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 

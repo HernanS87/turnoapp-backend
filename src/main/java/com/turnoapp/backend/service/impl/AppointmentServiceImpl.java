@@ -153,14 +153,14 @@ public class AppointmentServiceImpl implements AppointmentService {
                 if (!isProfessional) {
                     throw new IllegalArgumentException("Solo el profesional puede cambiar a este estado");
                 }
-                if (!appointment.getProfessional().getUser().getId().equals(userId)) {
+                if (!appointment.getProfessional().getId().equals(userId)) {
                     throw new IllegalArgumentException("No tienes permiso para modificar este turno");
                 }
             }
             case CANCELLED -> {
                 // Ambos pueden cancelar
-                boolean isOwnerProfessional = appointment.getProfessional().getUser().getId().equals(userId) && isProfessional;
-                boolean isOwnerClient = appointment.getClient().getUser().getId().equals(userId) && !isProfessional;
+                boolean isOwnerProfessional = appointment.getProfessional().getId().equals(userId) && isProfessional;
+                boolean isOwnerClient = appointment.getClient().getId().equals(userId) && !isProfessional;
 
                 if (!isOwnerProfessional && !isOwnerClient) {
                     throw new IllegalArgumentException("No tienes permiso para cancelar este turno");
