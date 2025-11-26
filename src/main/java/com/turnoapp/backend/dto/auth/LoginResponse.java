@@ -9,6 +9,8 @@ public record LoginResponse(
         String firstName,
         String lastName,
         UserRole role,
-        Long professionalId  // null si no es profesional
+        Long professionalId,  // null si no es profesional
+        String province,
+        String city
 ) {
 }

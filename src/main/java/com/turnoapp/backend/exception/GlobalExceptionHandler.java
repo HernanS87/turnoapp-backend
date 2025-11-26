@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
         ApiError error = new ApiError(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Unauthorized",
-                "Invalid email or password",
+                "El email o la contraseña son incorrectos",
                 request.getDescription(false).replace("uri=", "")
         );
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);

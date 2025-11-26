@@ -43,6 +43,12 @@ public class User {
 
     private LocalDate birthDate;
 
+    @Column(length = 100)
+    private String province;
+
+    @Column(length = 100)
+    private String city;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

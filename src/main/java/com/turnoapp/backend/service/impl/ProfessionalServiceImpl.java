@@ -2,6 +2,7 @@ package com.turnoapp.backend.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turnoapp.backend.dto.professional.CreateProfessionalRequest;
+import com.turnoapp.backend.dto.professional.FilterOptionsResponse;
 import com.turnoapp.backend.dto.professional.ProfessionalResponse;
 import com.turnoapp.backend.dto.professional.SiteConfigRequest;
 import com.turnoapp.backend.dto.professional.UpdateProfessionalRequest;
@@ -16,6 +17,9 @@ import com.turnoapp.backend.repository.SiteConfigRepository;
 import com.turnoapp.backend.repository.UserRepository;
 import com.turnoapp.backend.service.ProfessionalService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -228,5 +232,41 @@ public class ProfessionalServiceImpl implements ProfessionalService {
         }
 
         return ProfessionalResponse.fromEntity(professional);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProfessionalResponse> searchProfessionals(String profession, String province, String city, String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        
+        // Normalizar parámetros (null si están vacíos)
+        String professionParam = (profession != null && !profession.trim().isEmpty()) ? profession.trim() : null;
+        String provinceParam = (province != null && !province.trim().isEmpty()) ? province.trim() : null;
+        String cityParam = (city != null && !city.trim().isEmpty()) ? city.trim() : null;
+        String searchParam = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+        
+        Page<Professional> professionalsPage = professionalRepository.findActiveProfessionalsWithFilters(
+                professionParam, provinceParam, cityParam, searchParam, pageable
+        );
+        
+        // Cargar SiteConfig para cada profesional si no está cargado
+        professionalsPage.getContent().forEach(professional -> {
+            if (professional.getSiteConfig() == null) {
+                siteConfigRepository.findByProfessionalId(professional.getId())
+                        .ifPresent(professional::setSiteConfig);
+            }
+        });
+        
+        return professionalsPage.map(ProfessionalResponse::fromEntity);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FilterOptionsResponse getFilterOptions() {
+        List<String> professions = professionalRepository.findDistinctProfessions();
+        List<String> provinces = professionalRepository.findDistinctProvinces();
+        List<String> cities = professionalRepository.findDistinctCities();
+
+        return new FilterOptionsResponse(professions, provinces, cities);
     }
 }

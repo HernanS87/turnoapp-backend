@@ -24,6 +24,10 @@ public record RegisterRequest(
         @NotBlank(message = "Phone is required")
         String phone,
 
-        LocalDate birthDate
+        LocalDate birthDate,
+
+        String province,
+
+        String city
 ) {
 }

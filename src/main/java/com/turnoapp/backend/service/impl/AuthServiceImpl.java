@@ -63,7 +63,9 @@ public class AuthServiceImpl implements AuthService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getRole(),
-                professionalId
+                professionalId,
+                user.getProvince(),
+                user.getCity()
         );
     }
 
@@ -84,6 +86,8 @@ public class AuthServiceImpl implements AuthService {
                 .lastName(request.lastName())
                 .phone(request.phone())
                 .birthDate(request.birthDate())
+                .province(request.province())
+                .city(request.city())
                 .build();
 
         user = userRepository.save(user);
@@ -105,7 +109,9 @@ public class AuthServiceImpl implements AuthService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getRole(),
-                null
+                null,
+                user.getProvince(),
+                user.getCity()
         );
     }
 }
